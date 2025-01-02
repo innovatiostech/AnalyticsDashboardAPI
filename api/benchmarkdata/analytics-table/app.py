@@ -12,7 +12,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///analytics.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1000 * 1000  # 500 MB
-app.config['UPLOAD_FOLDER'] = 'AnalyticsDashboardAPI/var/www/html/logs/uploads'
+app.config['UPLOAD_FOLDER'] = 'AnalyticsDashboardAPI/api/benchmarkdata/var/www/html/logs/uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif', 'mp4'}
 app.config['CORS_HEADER'] = 'application/json'
 app.config['SECURE_TOKEN'] = 'your_secure_token'  # Replace with a strong secure token
@@ -110,8 +110,8 @@ def analytics_action():
 def analytics_insertinto():
     """Insert analytics data from predefined directories."""
     try:
-        image_dir = r"AnalyticsDashboardAPI/var/www/html/logs/images"
-        video_dir = r"AnalyticsDashboardAPI/var/www/html/logs/videos"
+        image_dir = r"AnalyticsDashboardAPI/api/benchmarkdata/var/www/html/logs/images"
+        video_dir = r"AnalyticsDashboardAPI/api/benchmarkdata/var/www/html/logs/videos"
 
         log_image, image_uploaded = fileupload(image_dir)
         log_video, video_uploaded = fileupload(video_dir)
