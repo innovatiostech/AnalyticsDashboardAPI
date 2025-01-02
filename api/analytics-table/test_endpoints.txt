@@ -1,0 +1,151 @@
+
+for view all :
+
+
+{
+    "token": "your_secure_token",
+    "user_id": "user123",
+    "password": "password123",
+    "row_count": 10
+}
+
+
+
+for search : 
+
+{
+    "token": "sample_token",
+    "user_id": "user_123",
+    "password": "password_123",
+    "search": "camera",
+    "row_count": 5
+}
+
+
+
+for insertinto :
+
+
+{
+    "token": "sample_token",
+    "user_id": "user_123",
+    "password": "password_123",
+    "analytics_id": 123
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Test Endpoints for Flask API
+
+1. **Login Endpoint**
+   - URL: http://127.0.0.1:5000/login
+   - Method: POST
+   - Authorization: None
+   - JSON Body:
+     {
+       "user_id": "testuser",
+       "password": "password123"
+     }
+   - Expected Response:
+     {
+       "token": "JWT_TOKEN",
+       "user_id": "testuser",
+       "status": "active"
+     }
+
+2. **Register Endpoint**
+   - URL: http://127.0.0.1:5000/register
+   - Method: POST
+   - Authorization: None
+   - JSON Body:
+     {
+       "user_id": "testuser",
+       "email": "test@mail.com",
+       "mob": "1234567890",
+       "password": "password123",
+       "name": "Test User",
+       "permission": "admin",
+       "company": "Test Company",
+       "address": "123 Street",
+       "status": "active"
+     }
+   - Expected Response:
+     {
+       "msg": "User registered successfully"
+     }
+
+####################################
+
+{
+       "user_id": "justin",
+       "email": "justin@gmail.com",
+       "mob": "1234567890",
+       "password": "justinadmin123",
+       "name": "User",
+       "permission": "admin",
+       "company": "Benchmarkdata",
+       "address": "Calgary",
+       "status": "active"
+}
+
+
+
+
+###################################
+
+
+
+
+
+
+3. **Dashboard Endpoint**
+   - URL: http://127.0.0.1:5000/dashboard
+   - Method: POST
+   - Authorization: Bearer Token
+   - JSON Body:
+     {
+       "start_date": "2024-01-01",
+       "end date": "2024-01-31"
+     }
+   - Expected Response:
+     {
+       "analytics_id_count": 10,
+       "positive_status_count": 6,
+       "negative_status_count": 4,
+       "camera_count": 5
+     }
+
+4. **Analytics Endpoint**
+   - URL: http://127.0.0.1:5000/analytics
+   - Method: POST
+   - Authorization: Bearer Token
+   - JSON Body:
+     {}
+   - Expected Response:
+     [
+       {"analytics_id": 1, "message": "Camera active", "status": "true"},
+       {"analytics_id": 2, "message": "Error detected", "status": "false"}
+     ]
+
+5. **Settings Camera Endpoint**
+   - URL: http://127.0.0.1:5000/settings-camera
+   - Method: POST
+   - Authorization: Bearer Token
+   - JSON Body:
+     {}
+   - Expected Response:
+     [
+       {"camera_id": 1, "camera_url": "http://camera1", "status": "active"},
+       {"camera_id": 2, "camera_url": "http://camera2", "status": "inactive"}
+     ]
