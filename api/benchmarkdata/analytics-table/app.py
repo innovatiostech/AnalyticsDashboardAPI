@@ -1,10 +1,11 @@
+import os
+import random
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-import random
-import os
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 from werkzeug.utils import secure_filename
-from flask_cors import CORS
 
 app = Flask(__name__)
 
@@ -12,7 +13,9 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///analytics.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1000 * 1000  # 500 MB
-app.config['UPLOAD_FOLDER'] = 'AnalyticsDashboardAPI/api/benchmarkdata/var/www/html/logs/uploads'
+
+### change path of upload folder to your actual path  ############## #'D:/flask_apis/aicams.in/var/www/html/logs/uploads'
+app.config['UPLOAD_FOLDER'] = 'D:/Projects_ITech/ai.cam_github_repositories/AnalyticsDashboardAPI/api/benchmarkdata/uploads'  ############## need to filter based on image and video #################
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif', 'mp4'}
 app.config['CORS_HEADER'] = 'application/json'
 app.config['SECURE_TOKEN'] = 'your_secure_token'  # Replace with a strong secure token
@@ -55,7 +58,7 @@ def fileupload(directory):
 
 # Routes
 @app.route('/analytics-action', methods=['POST'])
-def analytics_action():
+def analytics_action():                                                 ###################### action is peding  #######################
     """Handle analytics actions with image and video uploads."""
     try:
         if 'image' not in request.files or 'video' not in request.files:
@@ -110,8 +113,8 @@ def analytics_action():
 def analytics_insertinto():
     """Insert analytics data from predefined directories."""
     try:
-        image_dir = r"AnalyticsDashboardAPI/api/benchmarkdata/var/www/html/logs/images"
-        video_dir = r"AnalyticsDashboardAPI/api/benchmarkdata/var/www/html/logs/videos"
+        image_dir = r"D:/Projects_ITech/ai.cam_github_repositories/AnalyticsDashboardAPI/api/benchmarkdata/var/www/html/logs/images" ### change path of images folder to your actual path  ##############
+        video_dir = r"D:/Projects_ITech/ai.cam_github_repositories/AnalyticsDashboardAPI/api/benchmarkdata/var/www/html/logs/videos" ### change path of videos folder to your actual path  ##############
 
         log_image, image_uploaded = fileupload(image_dir)
         log_video, video_uploaded = fileupload(video_dir)
@@ -208,29 +211,64 @@ def analytics_search():
 
 @app.route('/analytics-report', methods=['POST'])
 def analytics_report():
-    """Generate a report of analytics data within a date range."""
+    """Generate a report of analytics data within a date range and save as a PDF."""
     try:
         data = request.get_json()
         start_date = data.get('start_date')
         end_date = data.get('end_date')
 
+        # Fetch analytics data within the date range
         report_data = Analytics.query.filter(Analytics.create_date.between(start_date, end_date)).all()
+
+        # Directory to save the PDF
+        pdf_dir = r"D:/Projects_ITech/ai.cam_github_repositories/AnalyticsDashboardAPI/api/benchmarkdata/uploads" ### change path of pdfs folder to your actual path  ##############
+        os.makedirs(pdf_dir, exist_ok=True)
+
+        # Generate PDF file name
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        pdf_path = os.path.join(pdf_dir, f"analytics_report_{timestamp}.pdf")
+
+        # Create the PDF
+        c = canvas.Canvas(pdf_path, pagesize=letter)
+        c.setFont("Helvetica", 12)
+        c.drawString(100, 750, "Analytics Report")
+        c.drawString(100, 730, f"Date Range: {start_date} to {end_date}")
+        c.drawString(100, 710, "Generated On: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+
+        # Table headers
+        y_position = 680
+        c.drawString(50, y_position, "ID")
+        c.drawString(100, y_position, "User ID")
+        c.drawString(200, y_position, "Message")
+        c.drawString(300, y_position, "Date")
+        c.drawString(450, y_position, "Camera Location")
+        c.drawString(550, y_position, "Status")
+
+        # Table rows
+        y_position -= 20
+        for item in report_data:
+            if y_position < 50:  # Start a new page if the content exceeds
+                c.showPage()
+                y_position = 750
+
+            c.drawString(50, y_position, str(item.analytics_id))
+            c.drawString(100, y_position, item.user_id)
+            c.drawString(200, y_position, item.message[:30])  # Truncate message for space
+            c.drawString(280, y_position, item.create_date)
+            c.drawString(450, y_position, item.camera_location)
+            c.drawString(550, y_position, item.status)
+            y_position -= 20
+
+        c.save()
 
         return jsonify({
             'status': 'success',
-            'data': [
-                {
-                    'analytics_id': item.analytics_id,
-                    'message': item.message,
-                    'create_date': item.create_date
-                }
-                for item in report_data
-            ]
+            'message': 'Report generated successfully.',
+            'pdf_path': pdf_path
         })
 
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
-
 
 @app.route('/analytics-viewall', methods=['POST'])
 def analytics_viewall():
@@ -259,7 +297,8 @@ def analytics_viewall():
                 'camera_id': item.camera_id,
                 'camera_location': item.camera_location,
                 'action': item.action,
-                'status': item.status
+                'status': item.status,
+                'user_id':item.user_id
             }
             for item in results
         ]
